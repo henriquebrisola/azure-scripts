@@ -22,11 +22,17 @@
     }
     Until ($vmName -eq "n")
 
-    $storageType = 'Premium_LRS'  # Premium_LRS, StandardSSD_LRS, Standard_LRS
+#storageType = Premium_LRS, StandardSSD_LRS, Standard_LRS
+    If ($runOpt -eq "start") {
+        $storageType = "Premium_LRS"  
+    }
+    ElseIf ($runOpt -eq "stop"){
+        $storageType = "Standard_LRS"
+    }
 
 #run
     $i = 0
     ForEach ($vm in $vmList){
-        azRunVM $runOpt $storageSwitchYN[$i] $vm[$i]
+        azRunVM $runOpt $storageSwitchYN[$i] $storageType $vm[$i]
         $i = $i + 1
     }

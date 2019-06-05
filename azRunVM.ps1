@@ -3,12 +3,12 @@
         #start, stop, restart  #Switch disk type[y,n/Y,N] $Storage Type       #VMs       
         param([string]$runOpt, [char]$switchDisk, [string]$storageType, $vm)
           
-            #Restart VM
+            #start VM
             If ($runOpt -eq "start"){
                 azStorageSwitch $switchDisk $storageType $vm
                 azStartStopRestartVM $runOpt $vm
             }
-            #Restart VM
+            #stop VM
             ElseIf ($runOpt -eq "stop"){
                 azStartStopRestartVM $runOpt $vm
                 azStorageSwitch $switchDisk $storageType $vm
@@ -43,19 +43,24 @@
 #storage switch
     function azStorageSwitch{
         param ([char]$switchDisk, [string]$storageType, $vm)
-        $storageType = 'Standard_LRS' # Premium_LRS, StandardSSD_LRS, Standard_LRS
-        If ($azStorageSwitchYN -eq "y"){
-            $osDisk = $vm.storageprofile.osdisk.name
-            $diskUpdateConfig = New-AzureRmDiskUpdateConfig -AccountType $storageType 
-            Write-Output "Converting: $($osDisk) to $($storageType)"
-            Update-AzureRmDisk -DiskUpdate $diskUpdateConfig -ResourceGroupName $vm.ResourceGroupName -DiskName $osdisk
-
-            $dataDisks = $vm.StorageProfile.DataDisks
-            foreach ($disk in $dataDisks){
+        If ($switchDisk -eq "y"){
+            foreach($disk in $vm.Disks){
                 $diskUpdateConfig = New-AzureRmDiskUpdateConfig -AccountType $storageType 
                 Write-Output "Converting: $($disk.Name) to $($storageType)"
                 Update-AzureRmDisk -DiskUpdate $diskUpdateConfig -ResourceGroupName $vm.ResourceGroupName -DiskName $disk.Name
             }
+            
+            #$osDisk = $vm.storageprofile.osdisk.name
+            #$diskUpdateConfig = New-AzureRmDiskUpdateConfig -AccountType $storageType 
+            #Write-Output "Converting: $($osDisk) to $($storageType)"
+            #Update-AzureRmDisk -DiskUpdate $diskUpdateConfig -ResourceGroupName $vm.ResourceGroupName -DiskName $osdisk
+            #
+            #$dataDisks = $vm.StorageProfile.DataDisks
+            #foreach ($disk in $dataDisks){
+            #    $diskUpdateConfig = New-AzureRmDiskUpdateConfig -AccountType $storageType 
+            #    Write-Output "Converting: $($disk.Name) to $($storageType)"
+            #    Update-AzureRmDisk -DiskUpdate $diskUpdateConfig -ResourceGroupName $vm.ResourceGroupName -DiskName $disk.Name
+            #}
         }
     }
 
