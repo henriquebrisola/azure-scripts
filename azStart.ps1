@@ -1,3 +1,14 @@
+#fix os location
+if ($psISE)
+{
+    $scriptPath = Split-Path -Path $psISE.CurrentFile.FullPath
+    cd $scriptPath
+}
+else
+{
+    cd $global:PSScriptRoot
+}
+
 #import
     . .\azConnect.ps1
     . .\azRunVM.ps1
