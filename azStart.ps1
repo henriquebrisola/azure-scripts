@@ -15,10 +15,14 @@ else
     . .\azViewVMs.ps1
 
 #connect
-    azConnect
+    $connected = 0
+    if($connected -eq 0){ #runs once per session
+        azConnect
+    }
+    $connected = 1
 
 #select
-    azViewVMs
+    azViewVMs #lists VMs
         
 #parameters
     $vmList = @()
