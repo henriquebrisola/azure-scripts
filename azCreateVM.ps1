@@ -34,6 +34,8 @@ else
     -Location $location -Size $vmSize -Image $osImages[$osOpt] `    -VirtualNetworkName $vNetName -SubnetName $subnetNames[$subnetOpt] -PublicIpAddressName ($vmName + "-ip") `
     -SecurityGroupName ($subnetNames[$subnetOpt] + "SubnetEastUS2")
 
+    #issue, creating vnets, nic named the same vm's name, premium ssd disk, etc..
+    
 
 if(false){ #skips below
         
