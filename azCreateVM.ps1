@@ -47,7 +47,7 @@ else
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
     $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
-    write-output ("Resource Group named '" + $rg + "' has been created")
+    write-output ("Resource Group named '" + $rg.ResourceGroupName + "' has been created")
     do {
         try {
             $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
