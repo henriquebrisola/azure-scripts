@@ -33,33 +33,42 @@ else
     if ($credential) {
     }
     else{
+        write-output "Type the credentials for the vm"
         $credential = Get-Credential
-        }
+    }
     $storageAccountDiagName = "eastus2hdd"
     $storageAccountDiagRG = "common"
     $dnsPrefix = $vmName.ToLower()
+    $diskTypes = @("Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS")
+    $diskOpt = 0
 
 #create VM config
     $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
     $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
+    write-output ("Resource Group named '" + $rg + "' has been created")
     do {
-        try{
-            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `            -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
+        try {
+            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
             $failed = $false
         }
-        catch{
+        catch {
             $failed = $true
             Write-Host $_.Exception.Message -ForegroundColor Yellow
             $dnsPrefix = Read-Host "Digite um prefixo de DNS"
         }
-    } while($failed)
+    } while ($failed)
+    write-output ("Public IP named '" + $publicIp.Name + "' has been created")
     $nic = New-AzureRmNetworkInterface -Name $vmName -ResourceGroupName $vmName -Location $location -SubnetId $subnetId -PublicIpAddressId $publicIp.Id
+    write-output ("Network Interface named '" + $nic.Name + "' has been created")
     $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
     #$vm = Set-AzureRmVMCustomScriptExtension
     #$vm = Set-AzureRmVMDataDisk
+    $vm = Set-AzureRmVMOSDisk -VM $vm -Name ($vmName + "_OsDisk") -StorageAccountType $diskTypes[$diskOpt] -CreateOption fromImage
     $vm = Set-AzureRmVMBootDiagnostics -VM $vm -Enable -ResourceGroupName $storageAccountDiagRG -StorageAccountName $storageAccountDiagName
 
 #create VM
-    New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
+    write-output ("Creating VM '" + $vmName)
+    $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm -Verbose
+    write-output ("Virtual Machine named '" + $vmName + "' has been created")
