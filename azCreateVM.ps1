@@ -13,57 +13,53 @@ else
     . .\azConnect.ps1
 
 #connect
-    $connected = 0
-    if($connected -eq 0){ #runs once per session
-        azConnect
+    if ($connected) {
     }
-    $connected = 1
+    else{    #runs once per session
+        azConnect
+        $connected = $true
+    }
 
 #parameters
     $vmName = Read-Host "Type the name of the VM"
     $subnetNames = @("Private", "Public")
     $subnetOpt = 0
+    $subnetId = "/subscriptions/a20bbd82-35fa-4bde-b809-f7e466713330/resourceGroups/Common/providers/Microsoft.Network/virtualNetworks/EastUS2/subnets/"`        + $subnetNames[$subnetOpt]
     $location = "eastus2"
     $vNetName = "EastUS2"
     $vmSize = "Standard_" + "D2s_v3"
-    $osImages = @("Win2016Datacenter", "Win10", "UbuntuLTS", "Win2008R2SP1", "Win2012Datacenter","Win2012R2Datacenter", "RHEL", "SLES", "CoreOS", "Debian", "openSUSE-Leap", "CentOS")
-    $osOpt = 0
-
-#create
-    New-AzureRmVM -Name $vmName -ResourceGroupName $vmName `
-    -Location $location -Size $vmSize -Image $osImages[$osOpt] `    -VirtualNetworkName $vNetName -SubnetName $subnetNames[$subnetOpt] -PublicIpAddressName ($vmName + "-ip") `
-    -SecurityGroupName ($subnetNames[$subnetOpt] + "SubnetEastUS2")
-
-    #issue, creating vnets, nic named the same vm's name, premium ssd disk, etc..
-    
-
-if(false){ #skips below
-        
-#parameters
-    $vmList = @()
-    $storageSwitchYN = @()
-    $runOpt = Read-Host "Start, Stop or Restart?"
-    Do{
-        $vmName = Read-Host "Type the name of the VM or 'n' for No"
-        if ($vmName -ne "n"){
-            $vmList += Get-AzureRmVM -Name $vmName -ResourceGroupName $vmName -status
-            $storageSwitchYN += Read-Host "Switch the Storage Option? [y,n]"
+    #$osImages = @("Win2016Datacenter", "Win10", "UbuntuLTS", "Win2008R2SP1", "Win2012Datacenter","Win2012R2Datacenter", "RHEL", "SLES", "CoreOS", "Debian", "openSUSE-Leap", "CentOS")
+    #$osOpt = 0
+    if ($credential) {
+    }
+    else{
+        $credential = Get-Credential
         }
-    }
-    Until ($vmName -eq "n")
+    $storageAccountDiagName = "eastus2hdd"
+    $storageAccountDiagRG = "common"
+    $dnsPrefix = $vmName.ToLower()
 
-#storageType = Premium_LRS, StandardSSD_LRS, Standard_LRS
-    If ($runOpt -eq "start") {
-        $storageType = "Premium_LRS"  
-    }
-    ElseIf ($runOpt -eq "stop"){
-        $storageType = "Standard_LRS"
-    }
+#create VM config
+    $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
+    $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
+    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
+    $rg = New-AzureRmResourceGroup -name $vmName -Location $location
+    do {
+        try{
+            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `            -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
+            $failed = $false
+        }
+        catch{
+            $failed = $true
+            Write-Host $_.Exception.Message -ForegroundColor Yellow
+            $dnsPrefix = Read-Host "Digite um prefixo de DNS"
+        }
+    } while($failed)
+    $nic = New-AzureRmNetworkInterface -Name $vmName -ResourceGroupName $vmName -Location $location -SubnetId $subnetId -PublicIpAddressId $publicIp.Id
+    $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
+    #$vm = Set-AzureRmVMCustomScriptExtension
+    #$vm = Set-AzureRmVMDataDisk
+    $vm = Set-AzureRmVMBootDiagnostics -VM $vm -Enable -ResourceGroupName $storageAccountDiagRG -StorageAccountName $storageAccountDiagName
 
-#run
-    $i = 0
-    ForEach ($vm in $vmList){
-        azRunVM $runOpt $storageSwitchYN[$i] $storageType $vm[$i]
-        $i = $i + 1
-    }
-    }
+#create VM
+    New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
