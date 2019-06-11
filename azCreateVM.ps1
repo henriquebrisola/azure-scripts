@@ -34,10 +34,12 @@ else
     }
     else{
         $credential = Get-Credential
-        }
+    }
     $storageAccountDiagName = "eastus2hdd"
     $storageAccountDiagRG = "common"
     $dnsPrefix = $vmName.ToLower()
+    $diskTypes = @("Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS")
+    $diskOpt = 0
 
 #create VM config
     $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
@@ -45,21 +47,22 @@ else
     $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
     do {
-        try{
-            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `            -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
+        try {
+            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
             $failed = $false
         }
-        catch{
+        catch {
             $failed = $true
             Write-Host $_.Exception.Message -ForegroundColor Yellow
             $dnsPrefix = Read-Host "Digite um prefixo de DNS"
         }
-    } while($failed)
+    } while ($failed)
     $nic = New-AzureRmNetworkInterface -Name $vmName -ResourceGroupName $vmName -Location $location -SubnetId $subnetId -PublicIpAddressId $publicIp.Id
     $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
     #$vm = Set-AzureRmVMCustomScriptExtension
     #$vm = Set-AzureRmVMDataDisk
+    $vm = Set-AzureRmVMOSDisk -VM $vm -Name ($vmName + "_OsDisk") -StorageAccountType $diskTypes[$diskOpt] -CreateOption fromImage
     $vm = Set-AzureRmVMBootDiagnostics -VM $vm -Enable -ResourceGroupName $storageAccountDiagRG -StorageAccountName $storageAccountDiagName
 
 #create VM
-    New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
+    $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
