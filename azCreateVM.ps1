@@ -33,6 +33,7 @@ else
     if ($credential) {
     }
     else{
+        write-output "Type the credentials for the vm"
         $credential = Get-Credential
     }
     $storageAccountDiagName = "eastus2hdd"
@@ -46,6 +47,7 @@ else
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
     $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
+    write-output ("Resource Group named '" + $rg + "' has been created")
     do {
         try {
             $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
@@ -57,7 +59,9 @@ else
             $dnsPrefix = Read-Host "Digite um prefixo de DNS"
         }
     } while ($failed)
+    write-output ("Public IP named '" + $publicIp.Name + "' has been created")
     $nic = New-AzureRmNetworkInterface -Name $vmName -ResourceGroupName $vmName -Location $location -SubnetId $subnetId -PublicIpAddressId $publicIp.Id
+    write-output ("Network Interface named '" + $nic.Name + "' has been created")
     $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
     #$vm = Set-AzureRmVMCustomScriptExtension
     #$vm = Set-AzureRmVMDataDisk
@@ -65,4 +69,6 @@ else
     $vm = Set-AzureRmVMBootDiagnostics -VM $vm -Enable -ResourceGroupName $storageAccountDiagRG -StorageAccountName $storageAccountDiagName
 
 #create VM
-    $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
+    write-output ("Creating VM '" + $vmName)
+    $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm -Verbose
+    write-output ("Virtual Machine named '" + $vmName + "' has been created")
