@@ -19,24 +19,23 @@ else
         $script:vmList = @()
         $script:storageSwitchYN = @()
         $script:runOpt = Read-Host "Start, Stop or Restart?"
+
+        #storageType = Premium_LRS, StandardSSD_LRS, Standard_LRS
+            If ($runOpt.ToLower() -eq "start") {
+                $script:storageType = "Premium_LRS"  
+            }
+            ElseIf ($runOpt.ToLower() -eq "stop"){
+                $script:storageType = "Standard_LRS"
+            }
+
         Do{
             $vmName = Read-Host "Type the name of the VM or 'n' for No"
             if ($vmName.ToLower() -ne "n"){
                 $script:vmList += $vmName
-                $script:storageSwitchYN += Read-Host "Switch the Storage Option? [y,n]"
+                $script:storageSwitchYN += Read-Host "Do you want to switch the Storage to " + $script:storageType + "? [y,n]"
             }
         }
         Until ($vmName.ToLower() -eq "n")
-    }
-
-#storageType = Premium_LRS, StandardSSD_LRS, Standard_LRS
-    function storageType(){
-        If ($runOpt.ToLower() -eq "start") {
-            $script:storageType = "Premium_LRS"  
-        }
-        ElseIf ($runOpt.ToLower() -eq "stop"){
-            $script:storageType = "Standard_LRS"
-        }
     }
 
 #run
@@ -61,12 +60,10 @@ else
             }
         azViewVMs
         parameters
-        storageType
         run
     }
     elseif ($ListVMsOpt.ToLower() -eq "n") {
         parameters
-        storageType
         #connect
             if ($connected) {
             }
