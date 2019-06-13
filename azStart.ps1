@@ -15,11 +15,12 @@ else
     . .\azViewVMs.ps1
 
 #connect
-    $connected = 0
-    if($connected -eq 0){ #runs once per session
-        azConnect
+    if ($connected) {
     }
-    $connected = 1
+    else{    #runs once per session
+        azConnect
+        $connected = $true
+    }
 
 #select
     azViewVMs #lists VMs
