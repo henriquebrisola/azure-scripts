@@ -27,15 +27,19 @@
             If ($runOpt -eq "start"){
                 Write-Output "Starting: $($vm.Name)"
                 Start-AzureRmVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName
+                $result = "started"
             }
             ElseIf ($runOpt -eq "stop"){
                 Write-Output "Stopping: $($vm.Name)"
                 Stop-AzureRmVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -force
+                $result = "stopped"
             }
             ElseIf ($runOpt -eq "restart"){
                 Write-Output "Restarting: $($vm.Name)"
                 Restart-AzureRmVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName
-            }                
+                $result = "restarted"
+            }
+            return $result
         #}
     }
 
