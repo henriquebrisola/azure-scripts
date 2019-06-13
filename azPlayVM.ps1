@@ -11,7 +11,7 @@ else
 
 #import
     . .\azConnect.ps1
-    . .\azRunVM.ps1
+    . .\azStartStopRestart.ps1
     . .\azViewVMs.ps1
 
 #connect
