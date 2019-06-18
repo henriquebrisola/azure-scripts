@@ -32,7 +32,7 @@ else
             $vmName = Read-Host "Type the name of the VM or 'n' for No"
             if ($vmName.ToLower() -ne "n"){
                 $script:vmList += $vmName
-                $script:storageSwitchYN += Read-Host "Do you want to switch the Storage to " $script:storageType "? [y,n]"
+                $script:storageSwitchYN += Read-Host ("Do you want to switch the Storage to " + $script:storageType + "? [y,n]")
             }
         }
         Until ($vmName.ToLower() -eq "n")
