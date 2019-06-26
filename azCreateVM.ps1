@@ -45,7 +45,7 @@ else
 #create VM config
     $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
-    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2012-R2-Datacenter" -Version "latest"
+    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsDesktop" -Offer "Windows-10" -Skus "rs5-enterprise" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
     write-output ("Resource Group named '" + $rg.ResourceGroupName + "' has been created")
     do {
