@@ -13,6 +13,7 @@ else
     . .\azConnect.ps1
     . .\azStartStopRestart.ps1
     . .\azViewVMs.ps1
+    . .\azUpdateNSG.ps1
 
 #parameters
     function script:parameters(){
@@ -76,3 +77,6 @@ else
     else {
         Write-Host "wrong option"
     }
+
+#NSG fix
+    azUpdateNSG "RDP"

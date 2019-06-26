@@ -11,6 +11,7 @@ else
 
 #import
     . .\azConnect.ps1
+    . .\azUpdateNSG.ps1
 
 #connect
     if ($connected) {
@@ -72,3 +73,6 @@ else
     write-output ("Creating VM '" + $vmName)
     $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm -Verbose
     write-output ("Virtual Machine named '" + $vmName + "' has been created")
+
+#NSG fix
+    azUpdateNSG "RDP"
