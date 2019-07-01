@@ -79,4 +79,4 @@ else
     }
 
 #NSG fix
-    azUpdateNSG "RDP"
+    azUpdateNSG
