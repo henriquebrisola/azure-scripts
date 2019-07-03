@@ -47,6 +47,7 @@ else
     $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
     $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsDesktop" -Offer "Windows-10" -Skus "rs5-enterprise" -Version "latest"
+    #$vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "linux" -Offer "Windows-10" -Skus "rs5-enterprise" -Version "latest"
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
     write-output ("Resource Group named '" + $rg.ResourceGroupName + "' has been created")
     do {
@@ -75,4 +76,4 @@ else
     write-output ("Virtual Machine named '" + $vmName + "' has been created")
 
 #NSG fix
-    azUpdateNSG "RDP"
+    azUpdateNSG
