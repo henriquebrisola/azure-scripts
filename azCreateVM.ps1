@@ -2,11 +2,11 @@
 if ($psISE)
 {
     $scriptPath = Split-Path -Path $psISE.CurrentFile.FullPath
-    cd $scriptPath
+    Set-Location -Path $scriptPath
 }
 else
 {
-    cd $global:PSScriptRoot
+    Set-Location -Path $global:PSScriptRoot
 }
 
 #import
@@ -25,7 +25,8 @@ else
     $vmName = Read-Host "Type the name of the VM"
     $subnetNames = @("Private", "Public")
     $subnetOpt = 0
-    $subnetId = "/subscriptions/a20bbd82-35fa-4bde-b809-f7e466713330/resourceGroups/Common/providers/Microsoft.Network/virtualNetworks/EastUS2/subnets/"`        + $subnetNames[$subnetOpt]
+    $subnetId = "/subscriptions/a20bbd82-35fa-4bde-b809-f7e466713330/resourceGroups/Common/providers/Microsoft.Network/virtualNetworks/EastUS2/subnets/"`
+        + $subnetNames[$subnetOpt]
     $location = "eastus2"
     $vNetName = "EastUS2"
     $vmSize = "Standard_" + "D2s_v3"
@@ -52,7 +53,8 @@ else
     write-output ("Resource Group named '" + $rg.ResourceGroupName + "' has been created")
     do {
         try {
-            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
+            $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `
+                -AllocationMethod Dynamic -DomainNameLabel $dnsPrefix -Location $location -ErrorAction stop
             $failed = $false
         }
         catch {

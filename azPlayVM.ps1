@@ -2,11 +2,11 @@
 if ($psISE)
 {
     $scriptPath = Split-Path -Path $psISE.CurrentFile.FullPath
-    cd $scriptPath
+    Set-Location -Path $scriptPath
 }
 else
 {
-    cd $global:PSScriptRoot
+    Set-Location -Path $global:PSScriptRoot
 }
 
 #import

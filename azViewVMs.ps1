@@ -9,7 +9,7 @@
             "OsType" = (Get-AzureRMVm -name $vm.Name -ResourceGroup $vm.ResourceGroupName).StorageProfile.osDisk.osType;
             "Status" = (Get-AzureRMVm -name $vm.Name -ResourceGroup $vm.ResourceGroupName -Status).Statuses[1].DisplayStatus
         }
-        $azureRmVM += $obj | select ResourceGroup, Name, Location, VmSize, OsType, Status
+        $azureRmVM += $obj | Select-Object ResourceGroup, Name, Location, VmSize, OsType, Status
     }
-    $azureRmVM | ft
+    $azureRmVM | Format-Table
 }

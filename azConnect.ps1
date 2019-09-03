@@ -13,3 +13,10 @@ function azConnect{
     $contextFile = $scriptPath + ".\azContext.json"
     Import-AzureRmContext -path $contextFile #insert full path
 }
+
+if($false){
+    # in case of context issue run
+    Login-AzureRmAccount
+    Save-AzureRmContext -path '.\azContext.json'
+    Logout-AzureRmAccount
+}
