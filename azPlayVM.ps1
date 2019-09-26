@@ -25,7 +25,7 @@ else
             If ($runOpt.ToLower() -eq "start") {
                 $script:storageType = "Premium_LRS"  
             }
-            ElseIf ($runOpt.ToLower() -eq "stop"){
+            ElseIf ($runOpt.ToLower() -eq "stop") {
                 $script:storageType = "Standard_LRS"
             }
 
@@ -54,6 +54,7 @@ else
     if ($ListVMsOpt.ToLower() -eq "y") {
         #connect
             if ($connected) {
+                azConnect
             }
             else{    #runs once per session
                 azConnect
@@ -67,6 +68,7 @@ else
         parameters
         #connect
             if ($connected) {
+                azConnect
             }
             else{    #runs once per session
                 azConnect

@@ -10,6 +10,8 @@ function azUpdateNSG{
         $nsgConfig = Set-AzureRmNetworkSecurityRuleConfig -Name $ruleName -NetworkSecurityGroup $nsg -SourceAddressPrefix $myIP -Protocol $nsgConfig.Protocol `
             -Access $nsgConfig.Access -Direction $nsgConfig.Direction -SourcePortRange $nsgConfig.SourcePortRange -DestinationPortRange $nsgConfig.DestinationPortRange `
             -DestinationAddressPrefix $nsgConfig.DestinationAddressPrefix -Priority $nsgConfig.Priority
-        Set-AzureRmNetworkSecurityGroup -NetworkSecurityGroup $nsg
+        $setNSG = Set-AzureRmNetworkSecurityGroup -NetworkSecurityGroup $nsg
+        $msg = "NSG update for $ruleName rule has " + $setNSG.ProvisioningState.ToLower()
+        Write-Host $msg -ForegroundColor Green
     }
 }

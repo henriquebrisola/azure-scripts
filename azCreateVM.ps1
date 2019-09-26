@@ -44,13 +44,42 @@ else
     $diskTypes = @("Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS")
     $diskOpt = 0
 
+
 #create VM config
     $vm = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
-    $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
-    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "MicrosoftWindowsDesktop" -Offer "Windows-10" -Skus "rs5-enterprise" -Version "latest"
-    #$vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName "linux" -Offer "Windows-10" -Skus "rs5-enterprise" -Version "latest"
+    $os_opt = Read-Host "Windows, Ubuntu, CentOS(beta), RHEL?"
+    if ($os_opt.ToLower() -eq "windows") {
+        $os_publisher = "MicrosoftWindowsDesktop"
+        $os_offer = "Windows-10"
+        $os_sku = "rs5-enterprise"
+        $os_version = "latest"
+        $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Windows -Credential $credential
+    }
+    elseif ($os_opt.ToLower() -eq "linux") {        
+        $os_publisher = "Canonical"
+        $os_offer = "UbuntuServer"
+        $os_sku = "19.04"
+        $os_version = "latest"
+        $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Linux -Credential $credential
+    }
+    elseif ($os_opt.ToLower() -eq "centos") {        
+        $os_publisher = "westernoceansoftwaresprivatelimited"
+        $os_offer = "centos-7-6"
+        $os_sku = "centos-7-6-server"
+        $os_version = "latest"
+        $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Linux -Credential $credential
+    }
+    elseif ($os_opt.ToLower() -eq "rhel") {        
+        $os_publisher = "RedHat"
+        $os_offer = "RHEL"
+        $os_sku = "7.6"
+        $os_version = "latest"
+        $vm = Set-AzureRmVMOperatingSystem -VM $vm -ComputerName $vmName -Linux -Credential $credential
+    }
+
+    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $os_publisher -Offer $os_offer -Skus $os_sku -Version $os_version
     $rg = New-AzureRmResourceGroup -name $vmName -Location $location
-    write-output ("Resource Group named '" + $rg.ResourceGroupName + "' has been created")
+    write-output ("Resource Group '" + $rg.ResourceGroupName + "' has been created")
     do {
         try {
             $publicIp = New-AzureRmPublicIpAddress -Name ($vmName + "-ip") -ResourceGroupName $vmName `
@@ -59,13 +88,19 @@ else
         }
         catch {
             $failed = $true
-            Write-Host $_.Exception.Message -ForegroundColor Yellow
-            $dnsPrefix = Read-Host "Digite um prefixo de DNS"
+            if ($_.Exception.StatusCode -eq 400){
+                Write-Host $_.Exception.Message -ForegroundColor Yellow
+                $dnsPrefix = Read-Host "Typer another DNS record"
+            }
+            else {
+                Write-Host $_.Exception.Message -ForegroundColor Red
+                break
+            }
         }
     } while ($failed)
-    write-output ("Public IP named '" + $publicIp.Name + "' has been created")
+    write-output ("Public IP '" + $publicIp.Name + "' has been created")
     $nic = New-AzureRmNetworkInterface -Name $vmName -ResourceGroupName $vmName -Location $location -SubnetId $subnetId -PublicIpAddressId $publicIp.Id
-    write-output ("Network Interface named '" + $nic.Name + "' has been created")
+    write-output ("Network Interface '" + $nic.Name + "' has been created")
     $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $nic.Id
     #$vm = Set-AzureRmVMCustomScriptExtension
     #$vm = Set-AzureRmVMDataDisk
@@ -73,9 +108,18 @@ else
     $vm = Set-AzureRmVMBootDiagnostics -VM $vm -Enable -ResourceGroupName $storageAccountDiagRG -StorageAccountName $storageAccountDiagName
 
 #create VM
-    write-output ("Creating VM '" + $vmName)
-    $newVM = New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm -Verbose
-    write-output ("Virtual Machine named '" + $vmName + "' has been created")
+    write-output ("Creating VM '" + $vmName + "'")
+    try {
+        New-AzureRmVM -ResourceGroupName $vmName -Location $location -VM $vm
+        write-output ("Virtual Machine '" + $vmName + "' has been created")
+    }
+    catch {            
+        Write-Host $_.Exception.Message -ForegroundColor Yellow
+        Write-Host $_.Exception -ForegroundColor Yellow
+        #if($_.Exception -eq ''){
+            write-output ("Virtual Machine could not be created")
+        #}
+    }
 
 #NSG fix
     azUpdateNSG
