@@ -10,14 +10,15 @@ else
 
 #connect to Azure
 function azConnect{
-    Disable-AzureRmContextAutosave
     $contexts = Get-AzureRmContext -ListAvailable
-    foreach ($context in $contexts){
-        Remove-AzureRmContext -Name $context.name -Force
-    }
-    Disconnect-AzureRmAccount
-    $contextFile = $scriptPath + ".\azContext.json"
+    if ($contexts){
+        Clear-AzureRmContext
+    }    
+    Disable-AzureRmContextAutosave -Scope Process
+    #Disconnect-AzureRmAccount
+    $contextFile = $scriptPath + "\azContext.json"
     Import-AzureRmContext -path $contextFile #inserts full path
+    Set-AzureRmContext -SubscriptionName 'Pessoal'
 }
 if($false){
     # in case of context issue run
